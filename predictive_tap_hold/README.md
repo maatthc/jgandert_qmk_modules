@@ -135,7 +135,7 @@ You can customize PTH's behavior by adding any of the following options to your 
 ### `config.h` Options
 
 * `#define PTH_RESET_IMMEDIATELY_WHEN_TAP_CHOSEN`
-  By default, when tap is chosen, PTH enters a `PTH_DECIDED_TAP` state, which treats subsequent overlapping tap-hold keys as taps until the PTH is released. This is the default, as [for most people](https://github.com/jgandert/analyze_convert_keystroke_data/blob/main/README.md#counts-per-overlap-type) a normal key like `KC_E` rarely overlaps with a modifier like `KC_LCTL` (only 0.73 % of the training data). However, depending on your typing style, it may be slightly harder to activate holds. If you define this, PTH will instead immediately reset its state. As a result, if the next key is a tap-hold, it will become the new PTH key and thus be evaluated using the normal PTH processing, even if the *now previous* PTH key is still pressed.
+  By default, when tap is chosen, PTH enters a `PTH_DECIDED_TAP` state, which treats subsequent overlapping tap-hold keys as taps until the PTH is released. This is the default, as [for most people](https://github.com/jgandert/analyze_keystrokes/blob/main/README.md#counts-per-overlap-type) a normal key like `KC_E` rarely overlaps with a modifier like `KC_LCTL` (only 0.73 % of the training data). However, depending on your typing style, it may be slightly harder to activate holds. If you define this, PTH will instead immediately reset its state. As a result, if the next key is a tap-hold, it will become the new PTH key and thus be evaluated using the normal PTH processing, even if the *now previous* PTH key is still pressed.
 
 * `#define PTH_FAST_STREAK_TAP_ENABLE`
   Enables [Fast Streak Tap](#fast-streak-tap), so that tap-holds will be resolved as taps when a typing streak is detected.
@@ -628,7 +628,7 @@ This does not include the following overlap duration prediction, as in many case
 
 * **Debugging:** You can enable logging by adding `#define PTH_DEBUG` to your `config.h` and adding `CONSOLE_ENABLE = yes` (and optionally `KEYCODE_STRING_ENABLE = yes`) to your `rules.mk`. Run `qmk console` to view the output.
 * **Prediction Functions:** Some of the internal prediction functions use floating-point math. For more information on how prediction functions were evolved, see [evolve_tap_hold_predictors](https://github.com/jgandert/evolve_tap_hold_predictors).
-* **Training Data:** For more information about the training data used for evolving said functions, see [analyze_convert_keystroke_data](https://github.com/jgandert/analyze_convert_keystroke_data)
+* **Training Data:** For more information about the training data used for evolving said functions, see [analyze_convert_keystroke_data](https://github.com/jgandert/analyze_keystrokes)
 
 ## Acknowledgements
 
