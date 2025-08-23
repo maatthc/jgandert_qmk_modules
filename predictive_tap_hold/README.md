@@ -61,7 +61,7 @@ The following section goes into more detail about the overlap prediction.
 
 ### Overlap Duration Prediction
 
-When the second key is pressed, a function estimates the duration that both keys have to be pressed simultaneously (the overlap) for it to count as a hold. That duration can be low, if the data makes it likely this is a hold, and high, if this is likely to be a tap. If they're not pressed down together for the predicted duration, then the other prediction functions will handle the case.
+When the second key is pressed, and its on the opposite side or a tap-hold, a function estimates the duration that both keys have to be pressed simultaneously (the overlap) for it to count as a hold. That duration can be low, if the data makes it likely this is a hold, and high, if this is likely to be a tap. If they're not pressed down together for the predicted duration, then the other prediction functions will handle the case.
 
 ![For a text version, open min_overlap_above.puml](images/min_overlap_above.svg "timing diagram")
 

@@ -1341,7 +1341,7 @@ __attribute__((weak)) bool pth_predict_hold_when_pth_release_after_second_releas
 __attribute__((weak)) uint16_t pth_predict_min_overlap_for_hold_in_ms(void) {
     float pf = pth_get_prediction_factor_for_hold();
 
-    if (pth_is_second_same_side_as_pth() && pth_is_second_tap_hold()) {
+    if (pth_is_second_same_side_as_pth()) {
         // If second is same side, we want the overlap required to be larger,
         // as it is more likely this is intended as a tap.
         pf -= 0.10f;
@@ -1766,8 +1766,11 @@ bool process_record_predictive_tap_hold(uint16_t keycode, keyrecord_t* record) {
                 // Previously, this was only done, when they're on opposite
                 // sides, but the overlap prediction seems to be more accurate
                 // than third key prediction (far less data with third keys).
-                min_overlap_dur_for_hold = MIN(PTH_MS_MAX_OVERLAP, MAX(PTH_MS_MIN_OVERLAP, pth_predict_min_overlap_for_hold_in_ms()));
-                PTH_LOGF("  Predicted minimum overlap for hold: %u ms", min_overlap_dur_for_hold);
+                if (second_is_tap_hold || !second_is_same_side_as_pth) {
+                    min_overlap_dur_for_hold = MIN(PTH_MS_MAX_OVERLAP, MAX(PTH_MS_MIN_OVERLAP, pth_predict_min_overlap_for_hold_in_ms()));
+                    PTH_LOGF("  Predicted minimum overlap for hold: %u ms", min_overlap_dur_for_hold);
+                }
+
                 if (!second_is_same_side_as_pth) {
                     PTH_LOG("  Second is opposite-side press, so we are done for now.");
                     return false;
