@@ -17,9 +17,9 @@ Of course, no autofocus is perfect, and [neither is this](#prediction-performanc
 
 ## Features
 
-For the rest of this document, the **PTH key** refers to the first tap-hold key that is pressed, while no other tap-hold key is being processed by the PTH mechanism.
+For the rest of this document, **PTH key** refers to the first tap-hold key that is pressed, when no other tap-hold key is being processed yet by the PTH mechanism.
 
-* **[Instant Hold](#instant-hold):** By default, PTH will provisionally activate the hold function (e.g., apply a modifier or switch a layer) the moment you press the PTH key. If the final decision is a tap, this provisional hold is automatically undone. This is useful, for example, when you want to zoom with an `LCTL_T` key and your scroll wheel. Without this feature, you'd have to wait until hold was chosen. With it, zooming works instantly. Instant `LT` is useful for the same reason if you activate some function when its layer is active.
+* **[Instant Hold](#instant-hold):** By default, PTH will provisionally activate the hold function (e.g., apply a modifier or switch a layer) the moment you press the PTH key. If the final decision is a tap, this provisional hold is automatically undone. This is useful, for example, when you want to zoom with an `LCTL_T` key and your scroll wheel. Without this feature, you'd have to wait until hold was chosen. With it, zooming works instantly. Instant `LT` is useful for the same reason if you activate some function in your `keymap.c` when its layer is active.
 
 * **[Fast Streak Tap](#fast-streak-tap):** When enabled, PTH can detect if you're in the middle of a typing streak. If a tap-hold key is pressed during a streak, it will immediately resolve it as a tap, making your typing feel snappy. This is equivalent to QMK's [Flow Tap](https://docs.qmk.fm/tap_hold#flow-tap) or ZMK's [require-prior-idle-ms](https://zmk.dev/docs/keymaps/behaviors/hold-tap#require-prior-idle-ms).
 
@@ -27,7 +27,7 @@ For the rest of this document, the **PTH key** refers to the first tap-hold key 
 
 * **High Responsiveness:** PTH is designed for both reliability and speed. In a test over multiple weeks, the median time from key press to decision (tap vs. hold) when a second key was involved was 195 ms, and 223 ms for hold decisions. Of course, everyone types differently.
 
-* **Focus on Ergonomics:** By only activating a hold when your next keystroke comes from the opposite hand, PTH prevents same-hand chording fatigue. A tap-hold like `RCTL_T(KC_F)` on your right hand only becomes <kbd>Ctrl</kbd> when you press a key like `KC_C` on the left hand (for <kbd>Ctrl</kbd>+<kbd>C</kbd>). **That said**, you can very easily make any keys behave, [as if they're on the opposite side as the PTH](#side-options).
+* **Focus on Ergonomics:** By only activating a hold when your next keystroke comes from the opposite hand, PTH reduces same-hand chording fatigue. A tap-hold like `RCTL_T(KC_F)` on your right hand only becomes <kbd>Ctrl</kbd> when you press a key like `KC_C` on the left hand (for <kbd>Ctrl</kbd>+<kbd>C</kbd>), given that no third key is pressed. **That said**, you can very easily make any keys behave, [as if they're on the opposite side as the PTH](#side-options).
 
 * **Customizability:** Have a key send <kbd>Ctrl</kbd>+<kbd>C</kbd> [instead of the hold action](#register-keycode-on-hold). [Disable instant hold for a specific Layer-Tap](#instant-hold), so that you could press it and a Mod-Tap in any order. [Force a decision](#timeout-behavior) on press or after a timeout.
 
@@ -39,7 +39,7 @@ For the rest of this document, the **PTH key** refers to the first tap-hold key 
 
 At its heart, PTH operates on a few key principles in its default configuration:
 
-* **Use Any Data:** Decisions are made based on the sequence, side and timing of key events.
+* **Use More Data:** Decisions are made based on the sequence, side and timing of multiple key events.
 
 * **No Static Timeouts:** Apart from [forcing a decision after a long time](#timeout-behavior) without another key press (700 ms by default), decisions are made without static timeouts.
 
@@ -389,21 +389,21 @@ You can override the following functions to fine-tune the prediction logic.
 `bool pth_predict_hold_when_pth_release_after_second_press(void)`
 
 * **What it does:** Predicts hold when the PTH key is released after a second key was pressed and is still down.
-* **Default behavior:** Calls the default prediction function and returns `true` if the result is > 0.5.
+* **Default behavior:** Calls the default prediction function, multiplies the result by the factor from `pth_get_prediction_factor_for_hold()`, and returns `true` if the result is > 0.5.
 
 ---
 
 `bool pth_predict_hold_when_pth_release_after_second_release(void)`
 
 * **What it does:** Predicts hold when the PTH key is released after a second key was also released.
-* **Default behavior:** Calls the default prediction function and returns `true` if the result is > 0.5.
+* **Default behavior:** Calls the default prediction function, multiplies the result by the factor from `pth_get_prediction_factor_for_hold()`, and returns `true` if the result is > 0.5.
 
 ---
 
 `uint16_t pth_predict_min_overlap_for_hold_in_ms(void)`
 
 * **What it does:** Predicts the minimum overlap time in milliseconds required to consider a sequence a hold.
-* **Default behavior:** Calls the default prediction function and clamps the result between `PTH_MS_MIN_OVERLAP` and `PTH_MS_MAX_OVERLAP`.
+* **Default behavior:** Gets the factor from `pth_get_prediction_factor_for_hold()`. If the second key is on the same-side, reduces the factor by 10 % (thus making the overlap larger), as same side presses are more likely to be taps. Then calls the default prediction function and multiplies its return value with `1 + (1 - factor)`. For example, when the factor is 0.9, then the overlap will be multiplied with `(1 + (1 - 0.9)) = 1.1`.
 
 #### Fast Streak Tap
 
@@ -468,7 +468,7 @@ There are two prediction functions included that you could use in your `pth_pred
 
 * **What it does:** Returns a factor to adjust the hold prediction probability. A value less than 1.0 makes holds harder to trigger, while a value greater than 1.0 makes them easier.
 * **How it works:**
-    * For predictions that return a probability (like `pth_predict_hold_...`), the result is multiplied by this factor. A result > 0.5 is considered a hold.
+    * For prediction functions that return a probability (like `pth_predict_hold_...`), the result is multiplied by this factor. A result > 0.5 is considered a hold.
     * For the overlap time prediction (`pth_predict_min_overlap_for_hold_in_ms`), a longer overlap makes a hold *harder*. So, the time is multiplied by `(1 + (1 - factor))`. For example, a factor of `0.85` results in the overlap time being multiplied by `1.15`, requiring a longer overlap.
 * **Default behavior:** Returns `0.95` if the user bits equal `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5%, 10%, and 15% harder respectively.
 * **When to override:** To disable the default logic, or to implement custom logic for adjusting hold sensitivity based on the key, layer, or other states.
@@ -514,11 +514,11 @@ Here is a selection of the functions that you can use in your custom logic to ge
 * `pth_get_status()`: Get the current status of the PTH state machine (e.g., `PTH_PRESSED`, `PTH_DECIDED_HOLD`).
 * `pth_is_processing_internal()`: Returns `true` if the current key event being processed (e.g. in `process_record_user`) was triggered internally by PTH itself.
 
-Check out [`predictive_tap_hold.h`](./predictive_tap_hold.h) to see all getter and utility methods.
+Check out [`predictive_tap_hold.h`](./predictive_tap_hold.h) for all getter and utility methods.
 
 ### Instant Tap Key (for Auto-Repeat)
 
-It is useful to have a way to keep the tap keycode of a tap-hold key pressed, so that the OS will auto-repeat said key (like `QUICK_TAP_TERM` in QMK). For example, if <kbd>Backspace</kbd> is a tap-hold, you may wish to hold it down to remove a bunch of text, without having to hammer it repeatedly. Tap-holds have a hard time allowing that, as pressing the keys for a long time usually results in a hold.
+It can be useful to keep the tap part of a tap-hold key pressed, so that the OS will auto-repeat it (like `QUICK_TAP_TERM` in QMK). For example, if use <kbd>Backspace</kbd> in a tap-hold, you may wish to hold it down to remove a bunch of text, without having to hammer it repeatedly. Tap-holds have a hard time allowing that, as pressing the keys for a long time usually results in a hold.
 
 One neat way of doing so requires barely any changes to your keymap. Find a conveniently placed key that isn't a tap-hold yet. Let's say `KC_R`. Replace it with a Layer-Tap such as `LT(0, KC_R)`. Do so for each side. Now, when you press that key, and a tap-hold key on the other side, the PTH machinery will run, and hold will be chosen. When hold is chosen, any tap-hold keys on the other side will automatically and instantly be registered as taps. Only when the key is released will it be unregistered.
 
@@ -552,7 +552,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t* record) {
 
 ## Order of Events
 
-PTH preserves the order of key releases and presses as much as possible. If <kbd>Shift</kbd> is down while the PTH key is being pressed, then it's normal to expect that <kbd>Shift</kbd> will affect the PTH. If `LCTL_T(KC_H)` is a tap, we rightly expect an uppercase "H".
+PTH preserves the order of key releases and presses as much as possible. If <kbd>Shift</kbd> is down while the PTH key is being pressed, then it's normal to expect that <kbd>Shift</kbd> will affect the PTH, even if <kbd>Shift</kbd> is already released when the PTH resolves to hold. For example, if `LCTL_T(KC_H)` is a tap, we rightly expect an uppercase "H".
 
 To achieve that, key releases after the PTH press are cached until the decision is made. When we finally choose hold or tap, the PTH's keycode is actually registered (unless it's an instant hold and hold was chosen). After that, the cached releases will now actually be processed. Before the PTH press, and after the PTH decision, releases are instantaneous!
 
@@ -627,8 +627,8 @@ This does not include the following overlap duration prediction, as in many case
 ## Implementation Notes
 
 * **Debugging:** You can enable logging by adding `#define PTH_DEBUG` to your `config.h` and adding `CONSOLE_ENABLE = yes` (and optionally `KEYCODE_STRING_ENABLE = yes`) to your `rules.mk`. Run `qmk console` to view the output.
-* **Prediction Functions:** Some of the internal prediction functions use floating-point math. For more information on how prediction functions were evolved, see [evolve_tap_hold_predictors](https://github.com/jgandert/evolve_tap_hold_predictors).
-* **Training Data:** For more information about the training data used for evolving said functions, see [analyze_convert_keystroke_data](https://github.com/jgandert/analyze_keystrokes)
+* **Prediction Functions:** Some of the internal prediction functions use floating-point math. For more information on how prediction functions were evolved, check out the [evolve_tap_hold_predictors](https://github.com/jgandert/evolve_tap_hold_predictors) repository.
+* **Training Data:** For more information about the training data used for evolving said functions, see the [analyze_keystrokes](https://github.com/jgandert/analyze_keystrokes) repository.
 
 ## Acknowledgements
 
