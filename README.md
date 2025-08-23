@@ -7,8 +7,8 @@
 | Magic Layer Alt-Tab | `jgandert/magic_layer_alt_tab` | This module provides a streamlined way to switch applications. Once you are on a layer of your choice, pressing `LALT(KC_TAB)` or `LSA(KC_TAB)`, will cause this module to hold <kbd>Alt</kbd>. You can then continue tapping these keys to navigate through your applications. <kbd>Alt</kbd> is automatically released as soon as you press any other key or deactivate the layer. |
 
 ## Add Modules to Your Build
-1. Make sure your copy of QMK (or Vial-QMK) is up to date. If it is, there will be a `modules` folder.
-2. Inside that directory, or inside the `modules` directory of your userspace directory, execute `git submodule add https://github.com/jgandert/qmk_modules.git modules/jgandert` and `git submodule update --init --recursive`
+1. Make sure your copy of QMK (or Vial-QMK) is up to date. If it is, there will be a `modules` folder. If you want to use your QMK userspace, add a `modules` directory.
+2. In your QMK or userspace directory, execute `git submodule add https://github.com/jgandert/qmk_modules.git modules/jgandert` and `git submodule update --init --recursive`
 3. If there's no `keymap.json` in the same folder as the `keymap.c`, create it and add the following or whichever modules you like to add:
 
 ```json
