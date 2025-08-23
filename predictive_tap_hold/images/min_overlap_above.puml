@@ -1,0 +1,74 @@
+@startuml
+!procedure new_highlight($from, $to, $text)
+highlight $from to $to #ffd70040;line:transparent : <color:#6d5c00>$text
+!endprocedure
+
+!procedure is_down($name)
+$name is pressed #89ea63;line:2b501d
+!endprocedure
+
+!procedure is_up($name)
+$name is {-}
+!endprocedure
+
+!procedure new_concise($text, $name)
+concise "$text" as $name
+$name has "<color:#2b501d>pressed" as pressed
+is_up($name)
+!endprocedure
+
+!theme toy
+
+skinparam defaultFontName "JetBrains Mono NL"
+skinparam Padding 4
+skinparam NoteBackgroundColor #e0ddf1
+skinparam NoteBorderColor #4b3a8d
+skinparam NoteFontColor #4b3a8d
+skinparam NoteFontStyle normal
+
+<style>
+document {
+   BackgroundColor transparent
+}
+
+footer {
+    HorizontalAlignment right
+}
+</style>
+
+mode compact
+
+new_concise("LCTL_T(KC_A))\n<color:grey>(the PTH key)</color>", X)
+new_concise("KC_B\n<color:grey>(opposite side)</color>", B)
+
+concise "<color:transparent>" as FAKE
+
+FAKE is "" #transparent;line:transparent
+
+@0
+FAKE is {hidden}
+is_down(X)
+
+@25
+is_down(B)
+
+@50
+@75
+
+@100
+note bottom of X
+overlap exceeded
+so choosing **hold**:
+**Ctrl + B** is send
+end note
+
+@125
+is_up(B)
+
+
+new_highlight(25, 125, "actual overlap")
+footer "in milliseconds"
+
+@25 <-> @100 : \npredicted overlap\nrequired for hold
+
+@enduml

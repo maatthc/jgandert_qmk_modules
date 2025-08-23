@@ -1,0 +1,88 @@
+@startuml
+!pragma useVerticalIf on
+!theme toy
+
+skinparam defaultFontName JetBrains Mono NL
+skinparam Padding 4
+skinparam ActivityBorderThickness 1.5
+<style>
+document {
+   BackgroundColor transparent
+}
+</style>
+
+'default handling PTH
+
+!procedure setStyleForDefault()
+<style>
+activityDiagram {
+  BackgroundColor #f1f1f1
+  diamond {
+    BackgroundColor #f1f1f1
+    FontColor #0d0d0d
+    FontStyle normal
+}
+</style>
+!endprocedure
+!procedure setStyleForMain()
+<style>
+activityDiagram {
+  BackgroundColor #gray
+
+  diamond {
+    BackgroundColor #gray
+    FontColor #white
+    FontStyle bold
+}
+</style>
+!endprocedure
+
+start
+:Tap-hold key (**PTH** key) is pressed;
+setStyleForMain()
+repeat
+    setStyleForDefault()
+    if (PTH key is held down long enough
+to trigger timeout-based decision?) then (yes)
+        #42c6f4:Hold;
+        kill
+    (no      ) elseif (PTH key is released?) then (yes)
+        #f7a83a:Tap;
+        kill
+    else (no)
+    endif
+repeat while (Second key is pressed?) is (no) not (yes)
+setStyleForMain()
+repeat
+    setStyleForDefault()
+    if (Second key is pressed on same-side
+as the PTH and is not tap-hold?) then (yes)
+        #f7a83a:Tap;
+        kill
+    (no      ) elseif (Same-side second key is released?) then (yes)
+        #f7a83a:Tap;
+        kill
+    (no      ) elseif (Second key is held down longer
+than **predicted** minimum overlap?) then (yes)
+        #42c6f4:Hold;
+        kill
+    (no      ) elseif (Third is pressed?) then (yes)
+        if (Function **predicts** Hold?) then (yes)
+            #42c6f4:Hold;
+            kill
+        else (no)
+            #f7a83a:Tap;
+            kill
+        endif
+    else (no)
+    endif
+repeat while (PTH key is released?) is (no) not (yes)
+if (Second key is opposite-side,
+and function **predicts** Hold?) then (yes)
+    #42c6f4:Hold;
+    kill
+else (no)
+    #f7a83a:Tap;
+    kill
+endif
+@enduml

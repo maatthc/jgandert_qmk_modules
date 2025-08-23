@@ -1,0 +1,79 @@
+@startuml
+!procedure is_down($name)
+$name is pressed #89ea63;line:2b501d
+!endprocedure
+
+!procedure is_up($name)
+$name is {-}
+!endprocedure
+
+!procedure new_concise($text, $name)
+concise "$text" as $name
+$name has "<color:#2b501d>pressed" as pressed
+is_up($name)
+!endprocedure
+
+!theme toy
+
+skinparam defaultFontName "JetBrains Mono NL"
+skinparam Padding 4
+skinparam NoteBackgroundColor #e0ddf1
+skinparam NoteBorderColor #4b3a8d
+skinparam NoteFontColor #4b3a8d
+skinparam NoteFontStyle normal
+
+<style>
+document {
+   BackgroundColor transparent
+}
+
+footer {
+    HorizontalAlignment right
+}
+</style>
+
+mode compact
+
+new_concise("KC_LSFT", S)
+new_concise("LCTL_T(KC_A))\n<color:grey>(the PTH key)</color>", X)
+new_concise("KC_B\n<color:grey>(same side)</color>", B)
+
+
+@0
+is_down(S)
+
+@25
+is_down(X)
+note bottom of X
+PTH press will
+be processed **when**
+PTH is chosen
+end note
+
+@50
+@75
+is_up(S)
+note bottom of S
+LSFT release will
+be processed **when**
+PTH is chosen
+end note
+
+@100
+@125
+is_down(B)
+note bottom of X
+B is same-side
+non-tap-hold, so
+choosing **tap**:
+
+1. A is pressed
+2. LSFT is released
+3. B is pressed
+end note
+
+@150
+
+footer "in milliseconds"
+
+@enduml
