@@ -3,7 +3,7 @@
 ## List
 | Name                | Path                           | Description |
 |---------------------|--------------------------------|-------------|
-| Predictive Tap Hold | `jgandert/predictive_tab_hold` | Predictive tap-hold module that analyzes typing dynamics to provide responsive taps and accurate holds without a static `TAPPING_TERM`. It defaults to an ergonomic bilateral model, using interactions between hands to determine intent, but is fully configurable to allow for same-hand holds and other custom behaviors. |
+| Predictive Tap Hold | `jgandert/predictive_tap_hold` | Predictive tap-hold module that analyzes typing dynamics to provide responsive taps and accurate holds without a static `TAPPING_TERM`. It defaults to an ergonomic bilateral model, using interactions between hands to determine intent, but is fully configurable to allow for same-hand holds and other custom behaviors. |
 | Magic Layer Alt-Tab | `jgandert/magic_layer_alt_tab` | This module provides a streamlined way to switch applications. Once you are on a layer of your choice, pressing `LALT(KC_TAB)` or `LSA(KC_TAB)`, will cause this module to hold <kbd>Alt</kbd>. You can then continue tapping these keys to navigate through your applications. <kbd>Alt</kbd> is automatically released as soon as you press any other key or deactivate the layer. |
 
 ## Add Modules to Your Build
@@ -13,7 +13,7 @@
 
 ```json
 {
-  "modules": ["jgandert/magic_layer_alt_tab", "jgandert/predictive_tab_hold"]
+  "modules": ["jgandert/magic_layer_alt_tab", "jgandert/predictive_tap_hold"]
 }
 ```
 
@@ -22,7 +22,7 @@ If there's one already, you have to merge it so that it is a valid JSON file. Fo
 ```json
 {
   "maintainer": "jgandert",
-  "modules": ["jgandert/predictive_tab_hold"]
+  "modules": ["jgandert/predictive_tap_hold"]
 }
 ```
 
