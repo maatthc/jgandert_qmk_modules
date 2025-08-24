@@ -326,8 +326,8 @@ bool pth_should_register_as_hold_when_same_side(uint16_t keycode, keyrecord_t* r
  *        (1 + (1 - 0.9)) = 1.1.
  *
  * By default, returns `0.95` if `pth_get_pth_side_user_bits()` equals
- * `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5%,
- * 10%, and 15% harder respectively on keys using them.
+ * `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5 %,
+ * 10 %, and 15 % harder respectively on keys using them.
  */
 float pth_get_prediction_factor_for_hold(void);
 
@@ -367,14 +367,14 @@ uint16_t pth_predict_min_overlap_for_hold_in_ms(void);
 #ifdef PTH_FAST_STREAK_TAP_ENABLE
 // These might be useful in pth_predict_fast_streak_tap.
 
-// This correctly predicted 7.49% of tap holds in the training data to be taps.
-// The remaining 92.51% will be handled by the normal PTH logic.
-// Conversely, it mispredicted 0.66% of the training data to be taps.
+// This correctly predicted 7.49 % of tap-holds in the data to be taps.
+// The remaining 92.51 % will be handled by the normal PTH logic.
+// Conversely, it mispredicted 0.66 % of the training data to be taps.
 float pth_default_get_fast_streak_tap_prediction(void);
 
-// This correctly predicted 3.46% of tap holds in the training data to be taps.
-// The remaining 96.54% will be handled by the normal PTH logic.
-// Conversely, it mispredicted 0.29% of the training data to be taps.
+// This correctly predicted 3.46 % of tap-holds in the data to be taps.
+// The remaining 96.54 % will be handled by the normal PTH logic.
+// Conversely, it mispredicted 0.29 % of the training data to be taps.
 float pth_conservative_get_fast_streak_tap_prediction(void);
 #endif // PTH_FAST_STREAK_TAP_ENABLE
 

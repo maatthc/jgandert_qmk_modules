@@ -39,8 +39,6 @@ For the rest of this document, **PTH key** refers to the first tap-hold key that
 
 At its heart, PTH operates on a few key principles in its default configuration:
 
-* **Use More Data:** Decisions are made based on the sequence, side and timing of multiple key events.
-
 * **No Static Timeouts:** Apart from [forcing a decision after a long time](#timeout-behavior) without another key press (700 ms by default), decisions are made without static timeouts.
 
 * **Tap is the Default:** Pressing and releasing a tap-hold key *by itself* results in a **tap** action.
@@ -51,7 +49,7 @@ At its heart, PTH operates on a few key principles in its default configuration:
     * **Hand Position:** Whether subsequent keys are on the same or opposite hand.
     * **Predictions:** For ambiguous cases, prediction functions — [evolved from actual typing data](https://github.com/jgandert/evolve_tap_hold_predictors) — make an educated guess to resolve the user's intent using any available data.
 
-* **Immediate once Chosen:** Once a decision has been made, every key press (tap hold or not) is instantaneous. If hold is chosen, opposite-side tap-holds become taps and same-side tap-holds become holds. This allows chording multiple tap-holds.
+* **Immediate once Chosen:** Once a decision has been made, every key press (tap-hold or not) is instantaneous. If hold is chosen, opposite-side tap-holds become taps and same-side tap-holds become holds. This allows chording multiple tap-holds.
 
 The following diagram gives an overview of how a decision is made with the **default** config:
 
@@ -163,8 +161,7 @@ You can override any of the following functions by adding your own implementatio
 * **What it does:** Determines the "sidedness" of a key. This is an alternative to the `pth_side_layout` array.
 * **Default behavior:** Uses the `pth_side_layout` array to determine the side.
 * **When to override:** If you need programmatic side assignment for keys.
-* **Return value:** It should return an `pth_side_t` value (possibly with additional *user bits* set.). The most important are `PTH_L` for the left hand and `PTH_R` for the right hand. See the next section for a table of all options.
-* **User Bits:** You can use the upper 4 bits of the return value for your own data. For example, you could define `MY_FLAG (1 << 4)` and then use `PTH_L | MY_FLAG` in your layout. You can then retrieve this value in your custom functions using `pth_get_pth_side_user_bits()` for the PTH, and using `PTH_GET_USER_BITS(pth_get_side(record))` for any record.
+* **Return value:** It should return an `pth_side_t` value, possibly with additional [user bits](#user-bits) set. The most important are `PTH_L` for the left hand and `PTH_R` for the right hand. See the next section for a table of all options.
 * **Example:** This is an alternative to the array that will work in many cases.
   ```c
   uint8_t pth_get_side(keyrecord_t* record) {
@@ -214,6 +211,20 @@ Here are all options:
 | `PTH_SL`     | Same                | Left                  |
 | `PTH_SR`     | Same                | Right                 |
 | `PTH_SO`     | Same                | Opposite              |
+
+##### User Bits
+
+The `pth_side_t` values only use the lower 4 bits of the `uint8_t`. You can use the upper 4 "user" bits in `pth_get_side` and `pth_side_layout` for your own flags. For example, you could `#define MY_FLAG PTH_TO_USER_BITS(4)` and then use `PTH_L | MY_FLAG` in your layout. You can then retrieve this value in your custom functions using `pth_get_pth_side_user_bits()` for the PTH, or `PTH_GET_USER_BITS(pth_get_side(record))` for any record.
+
+Despite the "user" in name, PTH provides the following constants by default:
+
+| User Bits | Value                 | Multiplier | Effect                   |
+|-----------|-----------------------|-----------:|--------------------------|
+| `PTH_5H`  | `PTH_TO_USER_BITS(1)` |       0.95 | Hold becomes 5 % harder  |
+| `PTH_10H` | `PTH_TO_USER_BITS(2)` |       0.90 | Hold becomes 10 % harder |
+| `PTH_15H` | `PTH_TO_USER_BITS(3)` |       0.85 | Hold becomes 15 % harder |
+
+However, they're easily disabled. See the [Prediction Factor](#prediction-factor) section for how, and an example of defining user bits to bias the prediction function even more strongly.
 
 #### Instant Hold
 
@@ -329,7 +340,7 @@ The following two functions work as a pair to create a timeout-based decision.
     * `-1`: Disable the timeout for the key.
     * `0`: Decide immediately when the key is pressed.
     * `>0`: Wait that many milliseconds. The highest valid value is `4095`.
-* **When to override:** If you want the timeout to depend on the key, for example. It is highly recommended to use a high value, as that way the prediction machinery can do its job.
+* **When to override:** If you want the timeout to depend on the key, for example. It is recommended to use a high value in most cases, because that way the prediction machinery always has enough time to do its job.
 
 ---
 
@@ -342,7 +353,7 @@ The following two functions work as a pair to create a timeout-based decision.
     * `PTH_DECIDED_HOLD`: Force a hold decision.
     * `PTH_DECIDED_TAP`: Force a tap decision.
     * Any other value: Do nothing and let the standard logic continue to handle the case.
-* **Example:** `RETRO_TAPPING`-like behavior → tap chosen if PTH pressed alone. Note that tap is already chosen when the timeout is not reached and PTH is released.
+* **Example:** `RETRO_TAPPING`-like behavior → tap chosen if PTH pressed alone. Note that tap is already selected when the PTH is released before the timeout runs out.
   ```c
   pth_status_t pth_get_forced_choice_after_timeout(void) {
       if (pth_get_second_keycode() == KC_NO) {
@@ -403,11 +414,11 @@ You can override the following functions to fine-tune the prediction logic.
 `uint16_t pth_predict_min_overlap_for_hold_in_ms(void)`
 
 * **What it does:** Predicts the minimum overlap time in milliseconds required to consider a sequence a hold.
-* **Default behavior:** Gets the factor from `pth_get_prediction_factor_for_hold()`. If the second key is on the same-side, reduces the factor by 10 % (thus making the overlap larger), as same side presses are more likely to be taps. Then calls the default prediction function and multiplies its return value with `1 + (1 - factor)`. For example, when the factor is 0.9, then the overlap will be multiplied with `(1 + (1 - 0.9)) = 1.1`.
+* **Default behavior:** Gets the factor from `pth_get_prediction_factor_for_hold()`. If the second key is on the same-side as the PTH, it reduces the factor by 10 % (thus making the overlap larger), as same-side presses are more likely to be taps. Then it calls the default prediction function and multiplies its return value with `1 + (1 - factor)`. For example, when the factor is 0.9, then the overlap will be multiplied with `(1 + (1 - 0.9)) = 1.1`.
 
 #### Fast Streak Tap
 
-Be aware that it is disabled by default. Add `#define PTH_FAST_STREAK_TAP_ENABLE` to your `config.h` to enable it.
+Be aware that it is disabled by default, because it does have a cost. It does increase the amount of taps that were meant to be holds. Add `#define PTH_FAST_STREAK_TAP_ENABLE` to your `config.h` to enable it.
 
 `bool pth_predict_fast_streak_tap(void)`
 
@@ -457,10 +468,10 @@ Be aware that it is disabled by default. Add `#define PTH_FAST_STREAK_TAP_ENABLE
 There are two prediction functions included that you could use in your `pth_predict_fast_streak_tap`:
 
 * `float pth_default_get_fast_streak_tap_prediction(void)`
-  This correctly predicted 7.49% of tap holds in the training data to be taps. The remaining 92.51% will be handled by the normal PTH logic. Conversely, it mispredicted 0.66% of the training data as taps.
+  This correctly predicted 7.49 % of tap-holds in the training data to be taps. The remaining 92.51 % will be handled by the normal PTH logic. Conversely, it mispredicted 0.66 % of the training data as taps.
 
 * `float pth_conservative_get_fast_streak_tap_prediction(void)`
-  This correctly predicted 3.46% of tap holds in the training data to be taps. The remaining 96.54% will be handled by the normal PTH logic. Conversely, it mispredicted 0.29% of the training data as taps.
+  This correctly predicted 3.46 % of tap-holds in the training data to be taps. The remaining 96.54 % will be handled by the normal PTH logic. Conversely, it mispredicted 0.29 % of the training data as taps.
 
 #### Prediction Factor
 
@@ -470,14 +481,14 @@ There are two prediction functions included that you could use in your `pth_pred
 * **How it works:**
     * For prediction functions that return a probability (like `pth_predict_hold_...`), the result is multiplied by this factor. A result > 0.5 is considered a hold.
     * For the overlap time prediction (`pth_predict_min_overlap_for_hold_in_ms`), a longer overlap makes a hold *harder*. So, the time is multiplied by `(1 + (1 - factor))`. For example, a factor of `0.85` results in the overlap time being multiplied by `1.15`, requiring a longer overlap.
-* **Default behavior:** Returns `0.95` if the user bits equal `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5%, 10%, and 15% harder respectively.
+* **Default behavior:** Returns `0.95` if the user bits equal `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5 %, 10 %, and 15 % harder respectively.
 * **When to override:** To disable the default logic, or to implement custom logic for adjusting hold sensitivity based on the key, layer, or other states.
 * **Example:** Make holds even harder on the left pinky, but slightly easier on the right index finger.
   ```c
-  // 25% harder holds
+  // 25 % harder holds
   #define UB_25H PTH_TO_USER_BITS(4)
   
-  // 10% easier holds
+  // 10 % easier holds
   #define UB_10E PTH_TO_USER_BITS(5)
 
   const uint8_t pth_side_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
@@ -518,11 +529,11 @@ Check out [`predictive_tap_hold.h`](./predictive_tap_hold.h) for all getter and 
 
 ### Instant Tap Key (for Auto-Repeat)
 
-It can be useful to keep the tap part of a tap-hold key pressed, so that the OS will auto-repeat it (like `QUICK_TAP_TERM` in QMK). For example, if use <kbd>Backspace</kbd> in a tap-hold, you may wish to hold it down to remove a bunch of text, without having to hammer it repeatedly. Tap-holds have a hard time allowing that, as pressing the keys for a long time usually results in a hold.
+It can be useful to keep the tap part of a tap-hold key pressed, so that the OS will auto-repeat it (like `QUICK_TAP_TERM` in QMK). For example, if you use <kbd>Backspace</kbd> in a tap-hold, you may wish to hold it down to remove a bunch of text, without having to hammer it repeatedly. Tap-holds have a hard time allowing that, as pressing the keys for a long time usually results in a hold.
 
 One neat way of doing so requires barely any changes to your keymap. Find a conveniently placed key that isn't a tap-hold yet. Let's say `KC_R`. Replace it with a Layer-Tap such as `LT(0, KC_R)`. Do so for each side. Now, when you press that key, and a tap-hold key on the other side, the PTH machinery will run, and hold will be chosen. When hold is chosen, any tap-hold keys on the other side will automatically and instantly be registered as taps. Only when the key is released will it be unregistered.
 
-As `0` is the lowest layer, whatever layer is active, this will not have an effect on which keys will be typed. Let's say `1` is active. The mentioned tap-hold will now activate layer `0`. However, in QMK higher layers have priority, and since `1` is still active, nothing changes.
+The reason this works is that in QMK higher layers have priority, and so activating layer `0` does not have any effect, because other higher layers are still active. As a result, the hold part of the tap-hold does nothing except for activating the tap part of tap-holds on the opposite site.
 
 ### Tap Keycodes Beyond the Basics
 
