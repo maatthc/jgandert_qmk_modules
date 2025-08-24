@@ -216,7 +216,7 @@ Here are all options:
 
 The `pth_side_t` values only use the lower 4 bits of the `uint8_t`. You can use the upper 4 "user" bits in `pth_get_side` and `pth_side_layout` for your own flags. For example, you could `#define MY_FLAG PTH_TO_USER_BITS(4)` and then use `PTH_L | MY_FLAG` in your layout. You can then retrieve this value in your custom functions using `pth_get_pth_side_user_bits()` for the PTH, or `PTH_GET_USER_BITS(pth_get_side(record))` for any record.
 
-Despite the "user" in name, PTH provides the following constants by default:
+Despite the "user" in the name, PTH provides the following constants by default:
 
 | User Bits | Value                 | Multiplier | Effect                   |
 |-----------|-----------------------|-----------:|--------------------------|
@@ -224,7 +224,15 @@ Despite the "user" in name, PTH provides the following constants by default:
 | `PTH_10H` | `PTH_TO_USER_BITS(2)` |       0.90 | Hold becomes 10 % harder |
 | `PTH_15H` | `PTH_TO_USER_BITS(3)` |       0.85 | Hold becomes 15 % harder |
 
-However, they're easily disabled. See the [Prediction Factor](#prediction-factor) section for how, and an example of defining user bits to bias the prediction function even more strongly.
+However, they're easily disabled like this:
+
+  ```c
+  float pth_get_prediction_factor_for_hold(void) {
+      return 1.0f;
+  }
+  ```
+
+See the [Prediction Factor](#prediction-factor) section for an example of defining more user bits to bias the prediction function even more strongly.
 
 #### Instant Hold
 
