@@ -571,7 +571,7 @@ __attribute__((weak)) bool pth_should_register_as_hold_when_same_side(uint16_t k
 // Key handling
 // ----------------------------------------------------------------------------
 static void process_record_with_new_time(keyrecord_t* record) {
-    record->event.time              = (timer_read() | 1);
+    record->event.time              = timer_read();
     is_processing_record_due_to_pth = true;
     process_record(record);
     is_processing_record_due_to_pth = false;
