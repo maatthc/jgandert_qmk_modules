@@ -27,9 +27,9 @@ For the rest of this document, **PTH key** refers to the first tap-hold key that
 
 * **High Responsiveness:** PTH is designed for both reliability and speed. In a test over multiple weeks, the median time from key press to decision (tap vs. hold) when a second key was involved was 195 ms, and 223 ms for hold decisions. Of course, everyone types differently.
 
-* **Focus on Ergonomics:** By only activating a hold when your next keystroke comes from the opposite hand, PTH reduces same-hand chording fatigue. A tap-hold like `RCTL_T(KC_F)` on your right hand only becomes <kbd>Ctrl</kbd> when you press a key like `KC_C` on the left hand (for <kbd>Ctrl</kbd>+<kbd>C</kbd>), given that no third key is pressed. **That said**, you can very easily make any keys behave, [as if they're on the opposite side as the PTH](#side-options).
+* **Focus on Ergonomics:** By only activating a hold when your next keystroke comes from the opposite hand, PTH reduces same-hand chording fatigue. A tap-hold like `RCTL_T(KC_F)` on your right hand only becomes <kbd>Ctrl</kbd> when you press a key like `KC_C` on the left hand (for <kbd>Ctrl</kbd>+<kbd>C</kbd>). **That said**, hold can be activated when a third key is pressed, and you can very easily make any keys behave, [as if they're on the opposite side as the PTH](#side-options).
 
-* **Customizability:** Have a key send <kbd>Ctrl</kbd>+<kbd>C</kbd> [instead of the hold action](#register-keycode-on-hold). [Disable instant hold for a specific Layer-Tap](#instant-hold), so that you could press it and a Mod-Tap in any order. [Force a decision](#timeout-behavior) on press or after a timeout.
+* **Customizability:** Have a key send <kbd>Ctrl</kbd>+<kbd>C</kbd> [instead of the hold action](#register-keycode-on-hold). Disable [instant hold for a specific Layer-Tap](#instant-hold), so that you could press it and a Mod-Tap in any order. [Force a decision](#timeout-behavior) on press or after a timeout. Make it [less likely that hold is chosen](#user-bits) for certain keys.
 
 ---
 
@@ -49,7 +49,7 @@ At its heart, PTH operates on a few key principles in its default configuration:
     * **Hand Position:** Whether subsequent keys are on the same or opposite hand.
     * **Predictions:** For ambiguous cases, prediction functions — [evolved from actual typing data](https://github.com/jgandert/evolve_tap_hold_predictors) — make an educated guess to resolve the user's intent using any available data.
 
-* **Immediate once Chosen:** Once a decision has been made, every key press (tap-hold or not) is instantaneous. If hold is chosen, opposite-side tap-holds become taps and same-side tap-holds become holds. This allows chording multiple tap-holds.
+* **Immediate once Chosen:** Once a decision has been made, every key press (tap-hold or not) is instantaneous. If hold is chosen, opposite-side tap-holds become taps and same-side tap-holds become holds.
 
 The following diagram gives an overview of how a decision is made with the **default** config:
 
@@ -65,7 +65,7 @@ When the second key is pressed, and its on the opposite side or a tap-hold, a fu
 
 ## Getting Started
 
-### Step 1: Add the modules to your repository
+### Step 1: Add the modules
 
 Follow [**the steps described in the parent README**](../README.md) to add this repository to your QMK or userspace, and this module to your `keyboard.json`.
 
@@ -96,7 +96,7 @@ const uint8_t pth_side_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
 Alternatively, you can implement the `pth_get_side` function, as shown in the [**Hand Assignment**](#hand-assignment) section.
 
 > [!TIP]
-> There are other values you can use besides left and right. For example, you can return `PTH_S` so that a key always acts as if it's on the same side as any other key. This is like using `*` in [Chordal Hold](https://docs.qmk.fm/tap_hold#chordal-hold)'s layout. For a complete list of all options, see the [**Side Options**](#side-options) section.
+> There are other values you can use besides left and right. For example, you can return `PTH_S` so that a key always acts as if it's on the same side as any other key. This is like using `*` in [Chordal Hold](https://docs.qmk.fm/tap_hold#chordal-hold)'s layout. For a complete list of all options, see the [**Side Options**](#side-options) section. See the [User Bits](#user-bits) section for how to make holds less likely on certain keys.
 
 ✅ Your keyboard is now ready to be compiled and flashed.
 
@@ -145,10 +145,10 @@ You can customize PTH's behavior by adding any of the following options to your 
   This defines the keycode sent to "neutralize" a modifier (like <kbd>Alt</kbd>) if PTH was held instantly but the final decision was a tap. This prevents lone modifiers from having an effect, such as causing OS menus to appear. `KC_F23` is a safe default as it's rarely used, but you can change it to another key.
 
 * `#define PTH_MS_MAX_OVERLAP 232`
-  When a PTH key is pressed, followed by a key on the opposite hand, a prediction function estimates the minimum overlap time (both keys down simultaneously) that is required to consider the PTH key a hold. This value acts as an upper cap on that prediction. You should not need to change this.
+  When a PTH key is pressed, followed by a tap-hold on the same hand or any key on the opposite hand, a prediction function estimates the minimum overlap time (both keys down simultaneously) that is required to consider the PTH key a hold. This value acts as an upper cap on that prediction. You should not need to change this.
 
 * `#define PTH_MS_MIN_OVERLAP 39`
-  This sets the absolute minimum overlap time (in milliseconds) required for an opposite-hand key combination to be considered a hold. This helps prevent accidental holds from very fast key rolls.
+  This sets the minimum overlap time (in milliseconds) required for a key combination to be considered a hold. This helps prevent accidental holds from overlapping key rolls.
 
 ### `keymap.c` Functions
 
@@ -162,7 +162,7 @@ You can override any of the following functions by adding your own implementatio
 * **Default behavior:** Uses the `pth_side_layout` array to determine the side.
 * **When to override:** If you need programmatic side assignment for keys.
 * **Return value:** It should return an `pth_side_t` value, possibly with additional [user bits](#user-bits) set. The most important are `PTH_L` for the left hand and `PTH_R` for the right hand. See the next section for a table of all options.
-* **Example:** This is an alternative to the array that will work in many cases.
+* **Example:** This is an alternative to the array that works in many cases.
   ```c
   uint8_t pth_get_side(keyrecord_t* record) {
       keypos_t pos = record->event.key;
@@ -224,7 +224,16 @@ Despite the "user" in the name, PTH provides the following constants by default:
 | `PTH_10H` | `PTH_TO_USER_BITS(2)` |       0.90 | Hold becomes 10 % harder |
 | `PTH_15H` | `PTH_TO_USER_BITS(3)` |       0.85 | Hold becomes 15 % harder |
 
-However, they're easily disabled like this:
+In your `pth_side_layout` or `pth_get_side`, you can simply combine these with the side options using a bitwise OR (`|`):
+
+  ```c
+  const uint8_t pth_side_layout[MATRIX_ROWS][MATRIX_COLS] PROGMEM = LAYOUT(
+      PTH_S | PTH_10H, PTH_L | PTH_5H, PTH_L, ..., PTH_R, PTH_R | PTH_5H, PTH_S | PTH_10H,
+      ...
+  );
+  ```
+
+If you'd like to use the whole 4 bits for something else, you can easily disable this:
 
   ```c
   float pth_get_prediction_factor_for_hold(void) {
@@ -232,7 +241,7 @@ However, they're easily disabled like this:
   }
   ```
 
-See the [Prediction Factor](#prediction-factor) section for an example of defining more user bits to bias the prediction function even more strongly.
+See the [Prediction Factor](#prediction-factor) section for an example of defining additional user bits to further bias the prediction functions.
 
 #### Instant Hold
 
@@ -361,7 +370,7 @@ The following two functions work as a pair to create a timeout-based decision.
     * `PTH_DECIDED_HOLD`: Force a hold decision.
     * `PTH_DECIDED_TAP`: Force a tap decision.
     * Any other value: Do nothing and let the standard logic continue to handle the case.
-* **Example:** `RETRO_TAPPING`-like behavior → tap chosen if PTH pressed alone. Note that tap is already selected when the PTH is released before the timeout runs out.
+* **Example:** `RETRO_TAPPING`-like behavior → tap chosen if PTH pressed alone. Note that tap is already selected when the PTH is released before any other key is pressed and before the timeout runs out.
   ```c
   pth_status_t pth_get_forced_choice_after_timeout(void) {
       if (pth_get_second_keycode() == KC_NO) {
@@ -476,7 +485,7 @@ Be aware that it is disabled by default, because it does have a cost. It does in
 There are two prediction functions included that you could use in your `pth_predict_fast_streak_tap`:
 
 * `float pth_default_get_fast_streak_tap_prediction(void)`
-  This correctly predicted 7.49 % of tap-holds in the training data to be taps. The remaining 92.51 % will be handled by the normal PTH logic. Conversely, it mispredicted 0.66 % of the training data as taps.
+  This correctly predicted 7.49 % of tap-holds in the training data to be taps. The remaining 92.51 % will be handled by the normal PTH logic, so it can still resolve to tap or hold. Conversely, it mispredicted 0.66 % of the training data as taps.
 
 * `float pth_conservative_get_fast_streak_tap_prediction(void)`
   This correctly predicted 3.46 % of tap-holds in the training data to be taps. The remaining 96.54 % will be handled by the normal PTH logic. Conversely, it mispredicted 0.29 % of the training data as taps.
@@ -489,7 +498,7 @@ There are two prediction functions included that you could use in your `pth_pred
 * **How it works:**
     * For prediction functions that return a probability (like `pth_predict_hold_...`), the result is multiplied by this factor. A result > 0.5 is considered a hold.
     * For the overlap time prediction (`pth_predict_min_overlap_for_hold_in_ms`), a longer overlap makes a hold *harder*. So, the time is multiplied by `(1 + (1 - factor))`. For example, a factor of `0.85` results in the overlap time being multiplied by `1.15`, requiring a longer overlap.
-* **Default behavior:** Returns `0.95` if the user bits equal `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5 %, 10 %, and 15 % harder respectively.
+* **Default behavior:** Returns `0.95` if the [user bits](#user-bits) equal `PTH_5H`, `0.9` for `PTH_10H`, and `0.85` for `PTH_15H`, thus making holds 5 %, 10 %, and 15 % harder respectively.
 * **When to override:** To disable the default logic, or to implement custom logic for adjusting hold sensitivity based on the key, layer, or other states.
 * **Example:** Make holds even harder on the left pinky, but slightly easier on the right index finger.
   ```c
@@ -517,7 +526,7 @@ There are two prediction functions included that you could use in your `pth_pred
       if (mp == 0 || mp > 3) {
           return 1.0f;
       }
-      return 1.0f - mp * 0.05;
+      return 1.0f - mp * 0.05f;
   }
   ```
 
@@ -530,6 +539,8 @@ Here is a selection of the functions that you can use in your custom logic to ge
 * `pth_get_pth_record()`: Get the `keyrecord_t` of the active PTH key. Useful for accessing event details like position (`record->event.key`).
 * `pth_get_second_record()`: Get the `keyrecord_t` of the second key.
 * `pth_get_prev_press_keycode()`: Get the keycode of the key that was pressed just before the PTH key.
+* `pth_get_pth_atomic_side()`: Get the relevant part of the PTH's full key side. Compare it with the `PTH_ATOM*` constants (e.g. `PTH_ATOM_LEFT`)
+* `pth_get_side(record)`: Get the full side of a key. Call `PTH_SIDE_WITHOUT_USER_BITS` with the result to remove user bits, so you can compare it with the `pth_side_t` values.
 * `pth_get_status()`: Get the current status of the PTH state machine (e.g., `PTH_PRESSED`, `PTH_DECIDED_HOLD`).
 * `pth_is_processing_internal()`: Returns `true` if the current key event being processed (e.g. in `process_record_user`) was triggered internally by PTH itself.
 
