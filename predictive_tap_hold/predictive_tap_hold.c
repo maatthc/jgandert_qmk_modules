@@ -1276,7 +1276,7 @@ return (
  *
  * @return float predicted overlap time in ms.
  */
-uint16_t pth_default_get_overlap_ms_for_hold_prediction(void) {
+float pth_default_get_overlap_ms_for_hold_prediction(void) {
     // clang-format off
     float guess = ABS(
         MAX(pth_press_to_second_press_dur *
@@ -1315,7 +1315,7 @@ __attribute__((weak)) float pth_get_prediction_factor_for_hold(void) {
     if (mp == 0 || mp > 3) {
         return 1.0f;
     }
-    return 1.0f - mp * 0.05;
+    return 1.0f - mp * 0.05f;
 }
 
 // Prediction functions
@@ -1514,7 +1514,7 @@ static void store_press_to_press_and_overlap_for_pth(void) {
     //
     // cCdx (d not released) -> without adding 0, this would only
     // provide 1 value from that sequence, but as other keys likely
-    // have been pressed before the prediction algorithm would have
+    // have been pressed before, the prediction algorithm would have
     // access to much older overlap values that are less relevant.
     //
     // For press to press durations, we would get 2 in either case.

@@ -127,6 +127,7 @@
 // Helper macros to decode the specific role behavior from a key's configuration.
 #define PTH_GET_PTH_ATOM_SIDE(encoded_val) (((encoded_val) >> 2) & 0b11)
 #define PTH_GET_OTHER_ATOM_SIDE(encoded_val) ((encoded_val) & 0b11)
+
 #define PTH_SIDE_WITHOUT_USER_BITS(encoded_val) ((encoded_val) & 0b1111)
 
 // This extracts the number passed to PTH_TO_USER_BIT
@@ -408,7 +409,7 @@ float pth_default_get_hold_prediction_when_pth_release_after_second_release(void
  *
  * @return predicted overlap time in ms.
  */
-uint16_t pth_default_get_overlap_ms_for_hold_prediction(void);
+float pth_default_get_overlap_ms_for_hold_prediction(void);
 
 // Accessor functions
 //=============================================================================
