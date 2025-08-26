@@ -665,3 +665,35 @@ This does not include the following overlap duration prediction, as in many case
 Thanks to all the people involved in creating and improving [QMK](https://qmk.fm/). Thanks to @getreuer for his help and invaluable [QMK posts](https://getreuer.info/posts/keyboards/index.html). Thanks to @getreuer, @filterpaper and @jweickm for the idea used in [Register Keycode on Hold](#register-keycode-on-hold).
 
 PlantUML and Inkscape were used to make the diagrams in this document. Thanks to their creators!
+
+
+### Dataset
+
+Thanks also to the authors of the dataset that was used for creating the prediction functions:
+
+* `pth_default_get_hold_prediction_when_third_press`
+* `pth_default_get_hold_prediction_when_pth_release_after_second_press`
+* `pth_default_get_hold_prediction_when_pth_release_after_second_release`
+* `pth_default_get_overlap_ms_for_hold_prediction`
+* `pth_default_get_fast_streak_tap_prediction`
+* `pth_conservative_get_fast_streak_tap_prediction`
+
+The dataset can be found at: https://userinterfaces.aalto.fi/136Mkeystrokes/
+
+```
+Vivek Dhakal, Anna Maria Feit, Per Ola Kristensson, Antti Oulasvirta
+Observations on Typing from 136 Million Keystrokes. 
+In Proceedings of the 2018 CHI Conference on Human Factors in Computing Systems, ACM, 2018.
+
+@inproceedings{dhakal2018observations,
+author = {Dhakal, Vivek and Feit, Anna and Kristensson, Per Ola and Oulasvirta, Antti},
+booktitle = {Proceedings of the 2018 CHI Conference on Human Factors in Computing Systems (CHI '18)},
+title = {{Observations on Typing from 136 Million Keystrokes}},
+year = {2018}
+publisher = {ACM}
+doi = {https://doi.org/10.1145/3173574.3174220}
+keywords = {text entry, modern typing behavior, large-scale study}
+}
+
+This data is free to use for research and non-commercial use with attribution to the authors. 
+```
