@@ -599,7 +599,7 @@ If we didn't cache the event, the actual release might happen after the PTH pres
 
 ## Prediction Performance
 
-This covers only the cases where prediction functions are used to make a decision.
+This covers only the cases where prediction functions are used to make a decision. Also note that the training data consists of a lot of participants (more than 70,000) with their various typing styles, so the real world performance will very likely differ.
 
 The training data consists of event sequences where the PTH is one of these:
 
@@ -608,7 +608,7 @@ The training data consists of event sequences where the PTH is one of these:
 
 ### PTH Released after Second Released
 
-**Example:** `LCTL_T(KC_A)` down, `KC_V` down, `KC_V` up, `LCTL_T(KC_A)` up (<kbd>V</kbd> is wrapped by the PTH)
+**Example:** `LCTL_T(KC_A)` down, `KC_V` down, `KC_V` up, `LCTL_T(KC_A)` up (<kbd>V</kbd> is wrapped by the PTH key)
 
 |    Category | correct |   total | % correct |
 |------------:|--------:|--------:|----------:|
@@ -618,7 +618,7 @@ The training data consists of event sequences where the PTH is one of these:
 
 ### PTH Released after Second Pressed
 
-**Example:** `LCTL_T(KC_A)` down, `KC_V` down, `LCTL_T(KC_A)` up (<kbd>V</kbd> overlaps with the PTH)
+**Example:** `LCTL_T(KC_A)` down, `KC_V` down, `LCTL_T(KC_A)` up (<kbd>V</kbd> overlaps with the PTH key)
 
 |    Category |   correct |      total | % correct |
 |------------:|----------:|-----------:|----------:|
@@ -644,7 +644,7 @@ The training data consists of event sequences where the PTH is one of these:
 | **Non-Mod** |  9,529,716 |  9,585,488 |   99.42 % |
 |   **Total** | 10,741,732 | 11,147,084 |   96.36 % |
 
-This does not include the following overlap duration prediction, as in many cases the predicted overlap will not be relevant, as the other cases apply. Including it anyway results in a performance of 95.66 %.
+This does not include the following overlap duration prediction, as in many cases the predicted overlap will not be relevant, because the previous cases already applied. Including it anyway results in a performance of 95.66 %.
 
 ### Overlap Duration after Second Pressed
 

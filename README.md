@@ -1,10 +1,10 @@
 # Modules
 
 ## List
-| Name                | Path                           | Description |
-|---------------------|--------------------------------|-------------|
-| Predictive Tap-Hold | `jgandert/predictive_tap_hold` | Predictive tap-hold module that analyzes typing dynamics to provide responsive taps and accurate holds without a static `TAPPING_TERM`. It defaults to an ergonomic bilateral model, using interactions between hands to determine intent, but is fully configurable to allow for same-hand holds and other custom behaviors. |
-| Magic Layer Alt-Tab | `jgandert/magic_layer_alt_tab` | This module provides a streamlined way to switch applications. Once you are on a layer of your choice, pressing `LALT(KC_TAB)` or `LSA(KC_TAB)`, will cause this module to hold <kbd>Alt</kbd>. You can then continue tapping these keys to navigate through your applications. <kbd>Alt</kbd> is automatically released as soon as you press any other key or deactivate the layer. |
+| Name                                                                                         | Path                           | Description                                                                                                                                                                                                                                                                                                                                                                          |
+|----------------------------------------------------------------------------------------------|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Predictive Tap-Hold](https://github.com/jgandert/qmk_modules/tree/main/predictive_tap_hold) | `jgandert/predictive_tap_hold` | Predictive tap-hold module that analyzes typing dynamics to provide responsive taps and accurate holds without a static `TAPPING_TERM`. It defaults to an ergonomic bilateral model, using interactions between hands to determine intent, but is fully configurable to allow for same-hand holds and other custom behaviors.                                                        |
+| [Magic Layer Alt-Tab](https://github.com/jgandert/qmk_modules/tree/main/magic_layer_alt_tab) | `jgandert/magic_layer_alt_tab` | This module provides a streamlined way to switch applications. Once you are on a layer of your choice, pressing `LALT(KC_TAB)` or `LSA(KC_TAB)`, will cause this module to hold <kbd>Alt</kbd>. You can then continue tapping these keys to navigate through your applications. <kbd>Alt</kbd> is automatically released as soon as you press any other key or deactivate the layer. |
 
 ## Add Modules to Your Build
 1. Make sure your copy of QMK (or Vial-QMK) is up to date. If it is, there will be a `modules` folder. If it isn't, [update it](https://docs.qmk.fm/newbs_git_using_your_master_branch#updating-your-master-branch). If you're using QMK userspace, add a `modules` directory.
@@ -17,12 +17,23 @@
 }
 ```
 
-If there's one already, you have to merge it so that it is a valid JSON file. For example:
+If there's one already, you have to merge it so that it is a valid JSON file. For example, adding the PTH module to
+this:
 
 ```json
 {
-  "maintainer": "jgandert",
-  "modules": ["jgandert/predictive_tap_hold"]
+  "maintainer": "you"
+}
+```
+
+Would look like this:
+
+```json
+{
+  "maintainer": "you",
+  "modules": [
+    "jgandert/predictive_tap_hold"
+  ]
 }
 ```
 
