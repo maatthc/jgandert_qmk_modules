@@ -269,6 +269,10 @@ static void reset_pth_state(void) {
 }
 
 void keyboard_post_init_predictive_tap_hold(void) {
+#ifdef PTH_DISABLED
+    uprintf("Predictive_tap_hold is disabled");
+    return;
+#endif
     // since we have no data yet, just use one far in the past
     press_to_press_timer = timer_read() - MS_MAX_DUR_FOR_TIMERS;
     release_timer        = timer_read() - (MS_MAX_DUR_FOR_TIMERS - 100);
@@ -1594,6 +1598,9 @@ static void collect_new_press_to_press_and_overlap_duration(bool is_pressed, uin
 // Core Processing Function (State Machine)
 // ----------------------------------------------------------------------------
 bool process_record_predictive_tap_hold(uint16_t keycode, keyrecord_t* record) {
+#ifdef PTH_DISABLED
+    return true;
+#endif
     // Initial checks - don't handle internal events or non-key events
     if (is_processing_record_due_to_pth || !IS_KEYEVENT(record->event)) {
         return true; // let the processing continue
@@ -2033,6 +2040,9 @@ bool process_record_predictive_tap_hold(uint16_t keycode, keyrecord_t* record) {
 // Housekeeping (runs constantly)
 // ----------------------------------------------------------------------------
 void housekeeping_task_predictive_tap_hold(void) {
+#ifdef PTH_DISABLED
+    return;
+#endif
     uint16_t cur_time = timer_read();
 
     if (!release_timer_max_reached) {
