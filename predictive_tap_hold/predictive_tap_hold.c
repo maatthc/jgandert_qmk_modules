@@ -14,16 +14,17 @@
 
 #include "predictive_tap_hold.h"
 
-#ifdef NO_ACTION_TAPPING
-#    error "This feature requires action tapping. Please update your config.h"
-#endif
+#ifndef PTH_DISABLED
+    #ifdef NO_ACTION_TAPPING
+    #    error "This feature requires action tapping. Please update your config.h"
+    #endif
 
-#if !defined(TAPPING_TERM) && !defined(TAPPING_TERM_PER_KEY)
-#    error "Predictive Tap-Hold requires TAPPING_TERM = 0 or TAPPING_TERM_PER_KEY to be defined. Please update your config.h"
-#elif defined(TAPPING_TERM) && !defined(TAPPING_TERM_PER_KEY) && TAPPING_TERM != 0
-#    error "Predictive Tap-Hold requires TAPPING_TERM = 0 or TAPPING_TERM_PER_KEY to be defined. Please update your config.h"
-#endif
-
+    #if !defined(TAPPING_TERM) && !defined(TAPPING_TERM_PER_KEY)
+    #    error "Predictive Tap-Hold requires TAPPING_TERM = 0 or TAPPING_TERM_PER_KEY to be defined. Please update your config.h"
+    #elif defined(TAPPING_TERM) && !defined(TAPPING_TERM_PER_KEY) && TAPPING_TERM != 0
+    #    error "Predictive Tap-Hold requires TAPPING_TERM = 0 or TAPPING_TERM_PER_KEY to be defined. Please update your config.h"
+    #endif
+#endif /* ifndef PTH_DISABLED */
 /*
 Here is the structure of a record for reference:
 
